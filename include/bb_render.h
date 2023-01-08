@@ -60,5 +60,5 @@ extern size_t bb_rendersequence_nthreads(const bb_rendersequence_t *target,
                                          size_t index);
 extern bb_render_function_t
 bb_rendersequence_pixelfunc(const bb_rendersequence_t *target, size_t index);
-void *bb_rendersequence_genargs(const bb_rendersequence_t *target,
-                                size_t index);
+extern void *bb_rendersequence_genargs(const bb_rendersequence_t *target,
+                                       size_t index);
