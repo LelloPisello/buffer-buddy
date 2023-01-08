@@ -64,10 +64,44 @@ bb_result_t bb_rendersequence_empty(bb_rendersequence_t *target) {
   return BB_SUCCESS;
 }
 
+// destroys a whole rendering sequence
 bb_result_t bb_rendersequence_destroy(bb_rendersequence_t *target) {
   if (!target)
     return BB_FAILURE;
   bb_rendersequence_empty(target);
   free(target);
+  return BB_SUCCESS;
+}
+
+// pushes back a rendering pass
+bb_result_t bb_rendersequence_push_back(bb_rendersequence_t *target,
+                                        size_t thread_number,
+                                        bb_render_function_t pixel_function,
+                                        void *generic_args) {
+  if (!target || !pixel_function)
+    return BB_FAILURE;
+#ifdef BB_RENDERSEQUENCE_IS_LINKED
+  if (!target->_head) {
+    target->_head = malloc(sizeof(struct rendersequencenode));
+    target->_head->_generic_args = generic_args;
+    target->_head->_next = NULL;
+    target->_head->_pixel_function = pixel_function;
+    target->_head->_thread_number = thread_number;
+  } else {
+    struct rendersequencenode *p = target->_head;
+    for (; p->_next; p = p->_next)
+      ;
+    p->_next = malloc(sizeof(struct rendersequencenode));
+    p->_next->_next = NULL;
+    p->_thread_number = thread_number;
+    p->_pixel_function = pixel_function;
+    p->_generic_args = generic_args;
+  }
+
+#endif
+#ifdef BB_RENDERSEQUENCE_IS_VECTOR
+
+#endif
+
   return BB_SUCCESS;
 }

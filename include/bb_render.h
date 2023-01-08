@@ -4,6 +4,9 @@
 typedef bb_result_t (*bb_render_function_t)(void *pixel, float Nx, float Ny,
                                             void *generic_args);
 
+// IMPORTANT: CONSIDER RENDERING THE RENDER PASS STRUCTURE VISIBLE, SO THAT
+// RENDERING SEQUENCES CAN BE CHANGED
+
 // define a structure containing a rendering chain, basically a series of passes
 // the renderer should apply to a buffer
 
@@ -25,37 +28,37 @@ typedef struct bb_rendersequence bb_rendersequence_t;
 #endif
 
 // create an empty render sequence
-bb_rendersequence_t *bb_rendersequence_create(void);
+extern bb_rendersequence_t *bb_rendersequence_create(void);
 // destroys a render sequence, BB_FAILURE on error
-bb_result_t bb_rendersequence_destroy(bb_rendersequence_t *);
+extern bb_result_t bb_rendersequence_destroy(bb_rendersequence_t *);
 
 // pushes back on the sequence a rendering pass
-bb_result_t bb_rendersequence_push_back(bb_rendersequence_t *target,
-                                        size_t thread_number,
-                                        bb_render_function_t pixel_function,
-                                        void *generic_args);
+extern bb_result_t
+bb_rendersequence_push_back(bb_rendersequence_t *target, size_t thread_number,
+                            bb_render_function_t pixel_function,
+                            void *generic_args);
 
 // pops last rendering pass from the list
-bb_result_t bb_rendersequence_pop_last(bb_rendersequence_t *target);
+extern bb_result_t bb_rendersequence_pop_last(bb_rendersequence_t *target);
 
 // inserts rendering pass at specified index
-bb_result_t bb_rendersequence_insert(bb_rendersequence_t *target, size_t index,
-                                     size_t thread_number,
-                                     bb_render_function_t pixel_function,
-                                     void *generic_args);
+extern bb_result_t bb_rendersequence_insert(bb_rendersequence_t *target,
+                                            size_t index, size_t thread_number,
+                                            bb_render_function_t pixel_function,
+                                            void *generic_args);
 
 // resizes render sequence
-bb_result_t bb_rendersequence_resize(bb_rendersequence_t *target,
-                                     size_t new_size);
+extern bb_result_t bb_rendersequence_resize(bb_rendersequence_t *target,
+                                            size_t new_size);
 
 // resizes render sequence to 0
-bb_result_t bb_rendersequence_empty(bb_rendersequence_t *);
+extern bb_result_t bb_rendersequence_empty(bb_rendersequence_t *);
 
 // getters:
-size_t bb_rendersequence_size(const bb_rendersequence_t *);
-size_t bb_rendersequence_nthreads(const bb_rendersequence_t *target,
-                                  size_t index);
-bb_render_function_t
+extern size_t bb_rendersequence_size(const bb_rendersequence_t *);
+extern size_t bb_rendersequence_nthreads(const bb_rendersequence_t *target,
+                                         size_t index);
+extern bb_render_function_t
 bb_rendersequence_pixelfunc(const bb_rendersequence_t *target, size_t index);
 void *bb_rendersequence_genargs(const bb_rendersequence_t *target,
                                 size_t index);
