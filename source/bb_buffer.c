@@ -4,7 +4,7 @@
 // contains fundamental data about the buffer
 struct bb_buffer {
   void *_location;
-  size_t _height, _width, _element_size;
+  size_t _length, _element_size;
   bb_bool_t _is_coupled;
 };
 
@@ -23,8 +23,7 @@ bb_buffer_t *bb_buffer_create() {
   bb_buffer_t *allocation;
   allocation = malloc(sizeof(struct bb_buffer));
   allocation->_element_size = 0;
-  allocation->_height = 0;
-  allocation->_width = 0;
+  allocation->_length = 0;
   allocation->_is_coupled = BB_FALSE;
   allocation->_location = NULL;
   return allocation;
@@ -45,13 +44,12 @@ bb_result_t bb_buffer_destroy(bb_buffer_t *target) {
 
 // return BB_FAILURE if any of the parameters don't make sense
 bb_result_t bb_buffer_bind(bb_buffer_t *target, void *to_be_binded,
-                           size_t width, size_t height, size_t element_size) {
-  if (!target || !to_be_binded || !width || !height || !element_size)
+                           size_t length, size_t element_size) {
+  if (!target || !to_be_binded || !length || !element_size)
     return BB_FAILURE;
   target->_is_coupled = BB_TRUE;
   target->_location = to_be_binded;
-  target->_width = width;
-  target->_height = height;
+  target->_length = length;
   target->_element_size = element_size;
   return BB_SUCCESS;
 }
@@ -63,25 +61,23 @@ bb_result_t bb_buffer_unbind(bb_buffer_t *target) {
   target->_is_coupled = BB_FALSE;
   target->_location = NULL;
   target->_element_size = 0;
-  target->_height = 0;
-  target->_width = 0;
+  target->_length = 0;
   return BB_SUCCESS;
 }
 
 // allocate a buffer for the handle or return BB_FAILURE on error
-bb_result_t bb_buffer_allocate(bb_buffer_t *target, size_t width, size_t height,
+bb_result_t bb_buffer_allocate(bb_buffer_t *target, size_t length,
                                size_t element_size) {
-  if (!target || !width || !height || !element_size)
+  if (!target || !length || !element_size)
     return BB_FAILURE;
   // delete current array if target is not binded
   if (target->_is_coupled == BB_FALSE) {
     free(target->_location);
   }
-  target->_width = width;
-  target->_height = height;
+  target->_length = length;
   target->_element_size = element_size;
   target->_is_coupled = BB_FALSE;
-  target->_location = calloc(width * height, element_size);
+  target->_location = calloc(length, element_size);
   return BB_SUCCESS;
 }
 
@@ -94,8 +90,7 @@ bb_result_t bb_buffer_deallocate(bb_buffer_t *target) {
   target->_location = NULL;
   target->_is_coupled = BB_FALSE;
   target->_element_size = 0;
-  target->_height = 0;
-  target->_width = 0;
+  target->_length = 0;
   return BB_SUCCESS;
 }
 
@@ -114,12 +109,13 @@ size_t bb_buffer_element_size(const bb_buffer_t *target) {
   return target ? target->_element_size : 0;
 }
 
-// get buffer width / height
-size_t bb_buffer_width(const bb_buffer_t *target) {
-  return target ? target->_width : 0;
+size_t bb_buffer_length(const bb_buffer_t *target) {
+  return target ? target->_length : 0;
 }
-size_t bb_buffer_height(const bb_buffer_t *target) {
-  return target ? target->_height : 0;
+
+// get buffer width / height
+size_t bb_buffer_size(const bb_buffer_t *target) {
+  return target ? target->_length * target->_element_size : 0;
 }
 
 // check if buffer is binded
