@@ -36,3 +36,10 @@ extern size_t bb_buffer_size(const bb_buffer_t *);
 extern size_t bb_buffer_element_size(const bb_buffer_t *);
 // returns buffer data
 extern void *bb_buffer_data(bb_buffer_t *);
+// returns whether buffer is locked
+extern bb_bool_t bb_buffer_is_locked(const bb_buffer_t *);
+
+// locks buffer, rendering it immune to any modifications
+extern bb_result_t bb_buffer_lock(bb_buffer_t *);
+// unlocks buffer, doing the opposite of locking it
+extern bb_result_t bb_buffer_unlock(bb_buffer_t *);
