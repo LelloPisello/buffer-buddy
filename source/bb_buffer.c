@@ -5,7 +5,7 @@
 struct bb_buffer {
   void *_location;
   size_t _length, _element_size;
-  bb_bool_t _is_coupled;
+  bb_bool_t _is_coupled, _is_locked;
 };
 
 /***
@@ -25,6 +25,7 @@ bb_buffer_t *bb_buffer_create() {
   allocation->_element_size = 0;
   allocation->_length = 0;
   allocation->_is_coupled = BB_FALSE;
+  allocation->_is_locked = BB_FALSE;
   allocation->_location = NULL;
   return allocation;
 }
@@ -45,7 +46,8 @@ bb_result_t bb_buffer_destroy(bb_buffer_t *target) {
 // return BB_FAILURE if any of the parameters don't make sense
 bb_result_t bb_buffer_bind(bb_buffer_t *target, void *to_be_binded,
                            size_t length, size_t element_size) {
-  if (!target || !to_be_binded || !length || !element_size)
+  if (!target || target->_is_locked == BB_TRUE || !to_be_binded || !length ||
+      !element_size)
     return BB_FAILURE;
   target->_is_coupled = BB_TRUE;
   target->_location = to_be_binded;
@@ -56,7 +58,7 @@ bb_result_t bb_buffer_bind(bb_buffer_t *target, void *to_be_binded,
 
 // unbind buffer and reset handle
 bb_result_t bb_buffer_unbind(bb_buffer_t *target) {
-  if (!target)
+  if (!target || target->_is_locked == BB_TRUE)
     return BB_FAILURE;
   target->_is_coupled = BB_FALSE;
   target->_location = NULL;
@@ -68,7 +70,7 @@ bb_result_t bb_buffer_unbind(bb_buffer_t *target) {
 // allocate a buffer for the handle or return BB_FAILURE on error
 bb_result_t bb_buffer_allocate(bb_buffer_t *target, size_t length,
                                size_t element_size) {
-  if (!target || !length || !element_size)
+  if (!target || target->_is_locked == BB_TRUE || !length || !element_size)
     return BB_FAILURE;
   // delete current array if target is not binded
   if (target->_is_coupled == BB_FALSE) {
@@ -84,13 +86,28 @@ bb_result_t bb_buffer_allocate(bb_buffer_t *target, size_t length,
 // free malloc buffer is buffer is not binded and reset handle
 bb_result_t bb_buffer_deallocate(bb_buffer_t *target) {
   // if target is binded or non existent return error
-  if (!target || target->_is_coupled == BB_TRUE || !target->_location)
+  if (!target || target->_is_locked == BB_TRUE ||
+      target->_is_coupled == BB_TRUE || !target->_location)
     return BB_FAILURE;
   free(target->_location);
   target->_location = NULL;
   target->_is_coupled = BB_FALSE;
   target->_element_size = 0;
   target->_length = 0;
+  return BB_SUCCESS;
+}
+
+bb_result_t bb_buffer_lock(bb_buffer_t *target) {
+  if (!target || target->_is_locked)
+    return BB_FAILURE;
+  target->_is_locked = BB_TRUE;
+  return BB_SUCCESS;
+}
+
+bb_result_t bb_buffer_unlock(bb_buffer_t *target) {
+  if (!target || !target->_is_locked)
+    return BB_FAILURE;
+  target->_is_locked = BB_FALSE;
   return BB_SUCCESS;
 }
 
@@ -123,7 +140,12 @@ bb_bool_t bb_buffer_is_binded(const bb_buffer_t *target) {
   return target ? target->_is_coupled : 0;
 }
 
-// return target buffer data start
+// return target buffer data start if target is not locked
 void *bb_buffer_data(bb_buffer_t *target) {
   return target ? target->_location : NULL;
+}
+
+// return buffer locking status
+bb_bool_t bb_buffer_is_locked(const bb_buffer_t *buffer) {
+  return buffer->_is_locked;
 }
