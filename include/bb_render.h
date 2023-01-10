@@ -17,6 +17,24 @@ typedef bb_result_t (*bb_render_function_t)(void *item, size_t item_index,
 // rendering steps are contained in a rendering chain: an object which contains
 // an arbitrary number of rendering steps and holds the threads the rendering is
 // going to run on.
+typedef struct bb_render_step bb_render_step_t;
+
+// creates empty render step
+extern bb_render_step_t *bb_render_step_create(void);
+// assigns rendering function
+extern bb_result_t bb_render_step_set_funcptr(bb_render_step_t *,
+                                              bb_render_function_t);
+// assigns number items each thread should process
+extern bb_result_t bb_render_step_set_thread_iterations(bb_render_step_t *,
+                                                        size_t);
+// assigns maximum number of threads
+extern bb_result_t bb_render_step_set_max_threads(bb_render_step_t *, size_t);
+
+// sets the rendering step's arguments to the provided void*
+extern bb_result_t bb_render_step_bind_args(bb_render_step_t *, void *);
+
+extern bb_render_function_t
+bb_render_step_get_funcptr(const bb_render_step_t *);
 
 // the rendering chain is by default implemented as a linked list: a vector
 // version may be added in the future.
